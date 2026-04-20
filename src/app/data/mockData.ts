@@ -1,0 +1,205 @@
+export const healthArticles = [
+  {
+    id: 1,
+    title: 'Understanding Heart Health',
+    excerpt: 'Learn about maintaining cardiovascular wellness and preventing heart disease.',
+    image: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=800&h=600&fit=crop',
+    category: 'Cardiology',
+  },
+  {
+    id: 2,
+    title: 'Mental Wellness Guide',
+    excerpt: 'Explore strategies for maintaining mental health and emotional well-being.',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=600&fit=crop',
+    category: 'Mental Health',
+  },
+  {
+    id: 3,
+    title: 'Nutrition Basics',
+    excerpt: 'Essential nutrition information for a balanced and healthy diet.',
+    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&h=600&fit=crop',
+    category: 'Nutrition',
+  },
+  {
+    id: 4,
+    title: 'Exercise and Fitness',
+    excerpt: 'Guidelines for maintaining physical fitness and active lifestyle.',
+    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=600&fit=crop',
+    category: 'Fitness',
+  },
+];
+
+export const patientMedicalRecords = [
+  {
+    id: 1,
+    date: '2025-12-15',
+    type: 'Consultation',
+    doctor: 'Dr. Sarah Johnson',
+    diagnosis: 'Annual Check-up',
+    notes: 'Patient in good health. Blood pressure normal. Recommended annual screening.',
+  },
+  {
+    id: 2,
+    date: '2025-09-10',
+    type: 'Lab Results',
+    doctor: 'Dr. Michael Chen',
+    diagnosis: 'Blood Test',
+    notes: 'All markers within normal range. Vitamin D slightly low - supplement recommended.',
+  },
+  {
+    id: 3,
+    date: '2025-06-05',
+    type: 'Consultation',
+    doctor: 'Dr. Sarah Johnson',
+    diagnosis: 'Flu Symptoms',
+    notes: 'Prescribed medication. Advised rest and fluids. Follow-up if symptoms persist.',
+  },
+];
+
+export const appointments = [
+  {
+    id: 1,
+    date: '2026-01-20',
+    time: '10:00 AM',
+    doctor: 'Dr. Sarah Johnson',
+    specialty: 'General Physician',
+    type: 'Check-up',
+    status: 'Upcoming',
+  },
+  {
+    id: 2,
+    date: '2026-02-15',
+    time: '2:30 PM',
+    doctor: 'Dr. Michael Chen',
+    specialty: 'Cardiologist',
+    type: 'Follow-up',
+    status: 'Upcoming',
+  },
+  {
+    id: 3,
+    date: '2025-12-15',
+    time: '11:00 AM',
+    doctor: 'Dr. Sarah Johnson',
+    specialty: 'General Physician',
+    type: 'Annual Check-up',
+    status: 'Completed',
+  },
+];
+
+export const patientsList = [
+  {
+    id: 'P001',
+    name: 'John Doe',
+    age: 42,
+    gender: 'Male',
+    condition: 'Diabetes',
+    riskLevel: 'medium',
+    lastVisit: '2026-01-10',
+  },
+  {
+    id: 'P002',
+    name: 'Jane Smith',
+    age: 35,
+    gender: 'Female',
+    condition: 'Hypertension',
+    riskLevel: 'low',
+    lastVisit: '2026-01-12',
+  },
+  {
+    id: 'P003',
+    name: 'Robert Johnson',
+    age: 58,
+    gender: 'Male',
+    condition: 'Heart Disease',
+    riskLevel: 'high',
+    lastVisit: '2026-01-08',
+  },
+  {
+    id: 'P004',
+    name: 'Emily Davis',
+    age: 29,
+    gender: 'Female',
+    condition: 'Asthma',
+    riskLevel: 'low',
+    lastVisit: '2026-01-14',
+  },
+  {
+    id: 'P005',
+    name: 'Michael Brown',
+    age: 65,
+    gender: 'Male',
+    condition: 'Chronic Pain',
+    riskLevel: 'medium',
+    lastVisit: '2026-01-09',
+  },
+];
+
+export const systemLogs = [
+  {
+    id: 1,
+    timestamp: '2026-01-14 10:35:22',
+    action: 'User Login',
+    user: 'admin@hospital.com',
+    status: 'Success',
+    ipAddress: '192.168.1.100',
+  },
+  {
+    id: 2,
+    timestamp: '2026-01-14 10:30:15',
+    action: 'Model Training',
+    user: 'system',
+    status: 'Completed',
+    details: 'Accuracy: 94.2%',
+  },
+  {
+    id: 3,
+    timestamp: '2026-01-14 09:45:33',
+    action: 'Patient Data Updated',
+    user: 'dr.smith@hospital.com',
+    status: 'Success',
+    patientId: 'P001',
+  },
+  {
+    id: 4,
+    timestamp: '2026-01-14 09:20:11',
+    action: 'Prediction Generated',
+    user: 'dr.johnson@hospital.com',
+    status: 'Success',
+    patientId: 'P003',
+  },
+  {
+    id: 5,
+    timestamp: '2026-01-14 08:55:44',
+    action: 'Failed Login Attempt',
+    user: 'unknown@test.com',
+    status: 'Failed',
+    ipAddress: '192.168.1.250',
+  },
+];
+
+export const datasets = [
+  {
+    id: 'DS001',
+    name: 'Patient Outcomes 2025',
+    records: 15420,
+    features: 45,
+    uploadDate: '2025-12-01',
+    status: 'Active',
+  },
+  {
+    id: 'DS002',
+    name: 'Diabetes Risk Factors',
+    records: 8950,
+    features: 32,
+    uploadDate: '2025-11-15',
+    status: 'Active',
+  },
+  {
+    id: 'DS003',
+    name: 'Cardiovascular Study Data',
+    records: 12300,
+    features: 38,
+    uploadDate: '2025-10-20',
+    status: 'Archived',
+  },
+];

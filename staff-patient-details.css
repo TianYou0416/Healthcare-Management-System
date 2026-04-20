@@ -1,0 +1,14 @@
+.details-grid {
+  grid-template-columns: 1fr 2fr;
+  margin-bottom: 32px;
+}
+
+.record-entry {
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}

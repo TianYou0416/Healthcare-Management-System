@@ -1,0 +1,9 @@
+.profile-grid {
+  grid-template-columns: 1fr 2fr;
+}
+
+@media (max-width: 900px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}

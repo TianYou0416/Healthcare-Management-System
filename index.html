@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Healthcare Management System UI</title>
+    <script>
+      const user = JSON.parse(localStorage.getItem("hms-user") || "null");
+      if (!user) window.location.replace("login.html");
+      else window.location.replace(user.role === "staff" ? "staff-dashboard.html" : "patient-health-information.html");
+    </script>
+  </head>
+  <body></body>
+</html>

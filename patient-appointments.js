@@ -14,12 +14,30 @@ function appointmentCard(apt) {
   `;
 }
 
+function emptyAppointmentState(title, copy) {
+  return `
+    <div class="card">
+      <div class="empty-state">
+        <span class="icon-box">${HMS.icon("calendar")}</span>
+        <h3>${title}</h3>
+        <p class="muted empty-state-copy">${copy}</p>
+      </div>
+    </div>
+  `;
+}
+
 function renderAppointments() {
-  const upcoming = HMS_DATA.appointments.filter((item) => item.status === "Upcoming");
-  const past = HMS_DATA.appointments.filter((item) => item.status === "Completed");
+  const upcoming = [];
+  const past = [];
   HMS.renderShell("patient-appointments.html", `
     <section class="page">
-      <div class="page-header"><h1 class="page-title">Appointments</h1><button class="button" id="bookingToggle">+ Book Appointment</button></div>
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Appointments</h1>
+          <p class="page-subtitle">Your upcoming and completed appointments will appear here once bookings are created.</p>
+        </div>
+        <button class="button" id="bookingToggle">+ Book Appointment</button>
+      </div>
       <div class="card pad booking-panel ${bookingOpen ? "" : "hidden"}">
         <h3>Book New Appointment</h3>
         <div class="grid grid-2">
@@ -32,9 +50,9 @@ function renderAppointments() {
         <p><button class="button" id="confirmBooking">Confirm Booking</button> <button class="button secondary" id="bookingCancel">Cancel</button></p>
       </div>
       <h2>Upcoming Appointments</h2>
-      <div class="grid grid-2" style="margin-bottom:32px">${upcoming.map(appointmentCard).join("")}</div>
+      <div style="margin-bottom:32px">${upcoming.length ? `<div class="grid grid-2">${upcoming.map(appointmentCard).join("")}</div>` : emptyAppointmentState("No Upcoming Appointments", "You do not have any upcoming appointments yet. Once you book one, it will appear here.")}</div>
       <h2>Past Appointments</h2>
-      <div class="card list-divider">${past.map((apt) => `<div class="list-item row between"><div class="row"><span class="icon-box">${HMS.icon("user")}</span><div><strong>${apt.doctor}</strong><p class="small muted">${apt.specialty}</p></div></div><div style="text-align:right"><p>${apt.date}</p><p class="small muted">${apt.time}</p></div></div>`).join("")}</div>
+      <div>${past.length ? `<div class="card list-divider">${past.map((apt) => `<div class="list-item row between"><div class="row"><span class="icon-box">${HMS.icon("user")}</span><div><strong>${apt.doctor}</strong><p class="small muted">${apt.specialty}</p></div></div><div style="text-align:right"><p>${apt.date}</p><p class="small muted">${apt.time}</p></div></div>`).join("")}</div>` : emptyAppointmentState("No Past Appointments", "Completed or previous appointments will show up here after your first confirmed visit.")}</div>
     </section>
   `);
   document.getElementById("bookingToggle").addEventListener("click", () => {
@@ -45,7 +63,7 @@ function renderAppointments() {
     bookingOpen = false;
     renderAppointments();
   });
-  document.getElementById("confirmBooking")?.addEventListener("click", () => alert("Appointment booking confirmed."));
+  document.getElementById("confirmBooking")?.addEventListener("click", () => alert("Appointment booking flow is ready. Database saving will be connected next."));
 }
 
 if (user) renderAppointments();

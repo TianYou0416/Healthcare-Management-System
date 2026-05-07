@@ -663,6 +663,23 @@ tr:hover td {
   animation: spin 850ms linear infinite;
 }
 
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 56px 24px;
+  text-align: center;
+}
+
+.empty-state p,
+.empty-state h3 {
+  margin: 0;
+}
+
+.empty-state-copy {
+  max-width: 520px;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

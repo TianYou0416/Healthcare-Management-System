@@ -4,27 +4,18 @@ if (user) {
   HMS.renderShell("patient-medical-records.html", `
     <section class="page">
       <div class="page-header">
-        <h1 class="page-title">Medical Records</h1>
-        <button class="button">${HMS.icon("file")} Export All</button>
+        <div>
+          <h1 class="page-title">Medical Records</h1>
+          <p class="page-subtitle">AI-generated reports and clinical records shared by your healthcare team will appear here.</p>
+        </div>
       </div>
-      <div class="card list-divider">
-        ${HMS_DATA.records.map((record) => `
-          <article class="list-item">
-            <div class="row start">
-              <span class="icon-box">${HMS.icon("file")}</span>
-              <div style="flex:1">
-                <div class="row between start">
-                  <div><h3>${record.type}</h3><p class="small muted">${record.doctor}</p></div>
-                  <span class="small muted">${record.date}</span>
-                </div>
-                <div class="soft-panel record-panel"><strong class="small">Diagnosis</strong><p>${record.diagnosis}</p></div>
-                <div class="soft-panel record-panel"><strong class="small">Notes</strong><p>${record.notes}</p></div>
-                <p><button class="link" style="border:0;background:transparent">${HMS.icon("file")} Download Record</button></p>
-              </div>
-            </div>
-          </article>
-        `).join("")}
-      </div>
+      <section class="card">
+        <div class="empty-state">
+          <span class="icon-box">${HMS.icon("file")}</span>
+          <h3>No Medical Records Yet</h3>
+          <p class="muted empty-state-copy">When your healthcare staff generates an AI prediction report or uploads a clinical record for you, it will be listed here for review and download.</p>
+        </div>
+      </section>
     </section>
   `);
 }

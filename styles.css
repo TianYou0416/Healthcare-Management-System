@@ -214,6 +214,19 @@ a {
   font-size: 14px;
 }
 
+.auth-message {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.auth-message.error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
 .link {
   color: var(--blue);
   font-weight: 600;

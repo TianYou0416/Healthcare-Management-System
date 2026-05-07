@@ -29,7 +29,7 @@ const HMS = {
   },
   logout() {
     localStorage.removeItem("hms-user");
-    window.location.href = "login.html";
+    window.location.href = "logout.html";
   },
   protect(role) {
     const user = HMS.user();

@@ -1,11 +1,13 @@
 import { auth, db } from "./firebase-config.js";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { doc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 let selectedRole = "patient";
 let isSubmitting = false;
 let authResolved = false;
 let message = "";
+const STAFF_EMAIL = "admin@gmail.com";
+const STAFF_PASSWORD = "admin123";
 
 function renderLogin() {
   document.getElementById("app").innerHTML = `
@@ -49,6 +51,39 @@ async function loadUserProfile(userId) {
   };
 }
 
+async function ensureDefaultStaffAccount() {
+  try {
+    const credential = await signInWithEmailAndPassword(auth, STAFF_EMAIL, STAFF_PASSWORD);
+    const existingProfile = await getDoc(doc(db, "users", credential.user.uid));
+    if (!existingProfile.exists()) {
+      await setDoc(doc(db, "users", credential.user.uid), {
+        uid: credential.user.uid,
+        name: "System Admin",
+        email: STAFF_EMAIL,
+        role: "staff",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+    return credential;
+  } catch (error) {
+    if (!["auth/invalid-credential", "auth/user-not-found"].includes(error.code)) {
+      throw error;
+    }
+  }
+
+  const createdCredential = await createUserWithEmailAndPassword(auth, STAFF_EMAIL, STAFF_PASSWORD);
+  await setDoc(doc(db, "users", createdCredential.user.uid), {
+    uid: createdCredential.user.uid,
+    name: "System Admin",
+    email: STAFF_EMAIL,
+    role: "staff",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+  return createdCredential;
+}
+
 function getFriendlyError(error) {
   switch (error.code) {
     case "auth/invalid-credential":
@@ -83,7 +118,17 @@ document.addEventListener("submit", (event) => {
     message = "";
     renderLogin();
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
+      let credential;
+
+      if (selectedRole === "staff") {
+        if (email !== STAFF_EMAIL || password !== STAFF_PASSWORD) {
+          throw new Error(`Staff login is limited to the default admin account: ${STAFF_EMAIL} / ${STAFF_PASSWORD}.`);
+        }
+        credential = await ensureDefaultStaffAccount();
+      } else {
+        credential = await signInWithEmailAndPassword(auth, email, password);
+      }
+
       const profile = await loadUserProfile(credential.user.uid);
       if (profile.role !== selectedRole) {
         await signOut(auth);

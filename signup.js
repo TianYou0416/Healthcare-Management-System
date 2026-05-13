@@ -2,7 +2,6 @@ import { auth, db } from "./firebase-config.js";
 import { createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { doc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-let selectedRole = "patient";
 let isSubmitting = false;
 let message = "";
 let authResolved = false;
@@ -16,11 +15,8 @@ function renderSignup() {
         ${message ? `<div class="auth-message error">${message}</div>` : ""}
         <form class="form" id="signupForm">
           <div class="field">
-            <label>Select Role</label>
-            <div class="role-grid">
-              <button class="role-button ${selectedRole === "patient" ? "active" : ""}" type="button" data-role="patient">Patient</button>
-              <button class="role-button ${selectedRole === "staff" ? "active" : ""}" type="button" data-role="staff">Healthcare Staff</button>
-            </div>
+            <label>Account Type</label>
+            <input class="input profile-readonly" value="Patient Account" readonly>
           </div>
           <div class="field"><label>Full Name</label><input class="input" name="name" type="text" placeholder="Enter your full name" required></div>
           <div class="field"><label>Email Address</label><input class="input" name="email" type="email" placeholder="Enter your email" required></div>
@@ -28,7 +24,10 @@ function renderSignup() {
           <div class="field"><label>Confirm Password</label><input class="input" name="confirmPassword" type="password" placeholder="Confirm your password" required></div>
           <button class="button" type="submit" ${isSubmitting ? "disabled" : ""}>${isSubmitting ? "Creating Account..." : "Create Account"}</button>
         </form>
-        <div class="auth-links"><p>Already have an account? <a class="link" href="login.html">Login</a></p></div>
+        <div class="auth-links">
+          <p>Already have an account? <a class="link" href="login.html">Login</a></p>
+          <p>Healthcare staff accounts are managed separately.</p>
+        </div>
       </section>
     </main>
   `;
@@ -46,13 +45,6 @@ function getFriendlyError(error) {
       return error.message || "Unable to create your account right now.";
   }
 }
-
-document.addEventListener("click", (event) => {
-  const roleButton = event.target.closest("[data-role]");
-  if (!roleButton) return;
-  selectedRole = roleButton.dataset.role;
-  renderSignup();
-});
 
 document.addEventListener("submit", (event) => {
   if (event.target.id !== "signupForm") return;
@@ -78,7 +70,7 @@ document.addEventListener("submit", (event) => {
         uid: credential.user.uid,
         name,
         email,
-        role: selectedRole,
+        role: "patient",
         createdAt: serverTimestamp()
       });
 
@@ -86,7 +78,7 @@ document.addEventListener("submit", (event) => {
         id: credential.user.uid,
         name,
         email,
-        role: selectedRole
+        role: "patient"
       });
     } catch (error) {
       isSubmitting = false;

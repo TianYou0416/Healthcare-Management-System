@@ -1,3 +1,16 @@
 .booking-panel {
   margin-bottom: 24px;
 }
+
+.appointment-message {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.appointment-message.success {
+  color: #15803d;
+}
+
+.appointment-message.error {
+  color: #b91c1c;
+}

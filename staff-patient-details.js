@@ -1,43 +1,125 @@
-const user = HMS.protect("staff");
-const patientId = new URLSearchParams(window.location.search).get("id") || "P001";
-let editingRecordId = null;
-let records = JSON.parse(localStorage.getItem("hms-staff-records") || "null") || HMS_DATA.staffRecords;
+import { db } from "./firebase-config.js";
+import { collection, doc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-function saveRecords() {
-  localStorage.setItem("hms-staff-records", JSON.stringify(records));
+const user = HMS.protect("staff");
+const patientId = new URLSearchParams(window.location.search).get("id") || "";
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
-function recordBlock(record) {
-  if (editingRecordId === record.id) {
-    return `
-      <form class="card pad record-entry" data-record-form="${record.id}">
-        <div class="grid grid-2">
-          <div class="field"><label>Date</label><input class="input" name="date" type="date" value="${record.date}"></div>
-          <div class="field"><label>Type</label><input class="input" name="type" value="${record.type}"></div>
-        </div>
-        <div class="field"><label>Diagnosis</label><input class="input" name="diagnosis" value="${record.diagnosis}"></div>
-        <div class="field"><label>Treatment</label><input class="input" name="treatment" value="${record.treatment}"></div>
-        <div class="field"><label>Notes</label><textarea class="textarea" name="notes" rows="3">${record.notes}</textarea></div>
-        <button class="button" type="submit">Save Changes</button>
-        <button class="button secondary" type="button" id="cancelEdit">Cancel</button>
-      </form>
-    `;
+function displayValue(value) {
+  const safeValue = String(value ?? "").trim();
+  return safeValue || "-";
+}
+
+function isPastDate(dateString) {
+  if (!dateString) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const appointmentDate = new Date(`${dateString}T00:00:00`);
+  return !Number.isNaN(appointmentDate.getTime()) && appointmentDate < today;
+}
+
+function normalizeAppointmentStatus(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  if (normalized === "cancelled" || normalized === "canceled") return "Cancelled";
+  if (normalized === "completed" || normalized === "past") return "Completed";
+  return "Upcoming";
+}
+
+async function loadPatientDetails() {
+  const [userSnapshot, patientSnapshot] = await Promise.all([
+    getDoc(doc(db, "users", patientId)),
+    getDoc(doc(db, "patients", patientId))
+  ]);
+
+  if (!userSnapshot.exists()) return null;
+
+  const account = userSnapshot.data();
+  const profile = patientSnapshot.exists() ? patientSnapshot.data() : {};
+
+  return {
+    uid: patientId,
+    patientId: profile.patientId || `P-${patientId.slice(0, 6).toUpperCase()}`,
+    name: profile.name || account.name || "Patient",
+    email: profile.email || account.email || "",
+    phone: profile.phone || "",
+    dateOfBirth: profile.dateOfBirth || "",
+    gender: profile.gender || "",
+    bloodType: profile.bloodType || "",
+    address: profile.address || "",
+    emergencyContactName: profile.emergencyContactName || "",
+    emergencyContactPhone: profile.emergencyContactPhone || "",
+    allergies: profile.allergies || "",
+    currentMedications: profile.currentMedications || "",
+    chronicConditions: profile.chronicConditions || "",
+    riskLevel: profile.riskLevel || "",
+    lastVisit: profile.lastVisit || ""
+  };
+}
+
+async function loadUpcomingAppointments(patient) {
+  const queriesToTry = [
+    query(collection(db, "appointments"), where("patientUserId", "==", patient.uid)),
+    query(collection(db, "appointments"), where("userId", "==", patient.uid)),
+    patient.email ? query(collection(db, "appointments"), where("patientEmail", "==", patient.email)) : null
+  ].filter(Boolean);
+
+  for (const lookupQuery of queriesToTry) {
+    const snapshot = await getDocs(lookupQuery);
+    if (!snapshot.empty) {
+      return snapshot.docs
+        .map((documentSnapshot) => ({
+          id: documentSnapshot.id,
+          ...documentSnapshot.data()
+        }))
+        .filter((appointment) => normalizeAppointmentStatus(appointment.status) === "Upcoming" && !isPastDate(appointment.date))
+        .sort((a, b) => `${a.date || ""} ${a.time || ""}`.localeCompare(`${b.date || ""} ${b.time || ""}`));
+    }
   }
+
+  return [];
+}
+
+function infoBlock(label, value) {
+  return `<div class="profile-display-item"><p class="label">${label}</p><p class="profile-display-value">${escapeHtml(displayValue(value)).replaceAll("\n", "<br>")}</p></div>`;
+}
+
+function appointmentCard(appointment) {
   return `
-    <div class="card pad record-entry">
+    <article class="card pad">
       <div class="row between start">
-        <div><p><span class="badge square blue">${record.type}</span> <span class="small muted">${record.date}</span></p><p class="small muted">Provider: ${record.provider}</p></div>
-        <div><button class="button secondary edit-record" data-record-id="${record.id}">Edit</button> <button class="button danger delete-record" data-record-id="${record.id}">Delete</button></div>
+        <div>
+          <h3>${escapeHtml(displayValue(appointment.doctor))}</h3>
+          <p class="small muted">${escapeHtml(displayValue(appointment.specialty))}</p>
+        </div>
+        <span class="badge blue">Upcoming</span>
       </div>
-      <p><strong>Diagnosis:</strong><br>${record.diagnosis}</p>
-      <p><strong>Treatment:</strong><br>${record.treatment}</p>
-      <p><strong>Notes:</strong><br>${record.notes}</p>
+      <p class="small muted">${HMS.icon("calendar")} ${escapeHtml(displayValue(appointment.date))} &nbsp; ${escapeHtml(displayValue(appointment.time))}</p>
+      <div class="soft-panel"><p class="label">Reason for Visit</p><p class="profile-display-value">${escapeHtml(displayValue(appointment.reason)).replaceAll("\n", "<br>")}</p></div>
+    </article>
+  `;
+}
+
+function emptyAppointmentState() {
+  return `
+    <div class="card">
+      <div class="empty-state">
+        <span class="icon-box">${HMS.icon("calendar")}</span>
+        <h3>No Upcoming Appointments</h3>
+        <p class="muted empty-state-copy">This patient has not booked any upcoming appointments yet.</p>
+      </div>
     </div>
   `;
 }
 
-function renderPatientDetails() {
-  const patient = HMS_DATA.patients.find((item) => item.id === patientId);
+function renderPatientDetails(patient, upcomingAppointments) {
   if (!patient) {
     HMS.renderShell("staff-patient-list.html", `<section class="page"><h1>Patient not found</h1><p><a class="link" href="staff-patient-list.html">Back to Patient List</a></p></section>`);
     return;
@@ -45,80 +127,74 @@ function renderPatientDetails() {
 
   HMS.renderShell("staff-patient-list.html", `
     <section class="page">
-      <div class="page-header"><h1 class="page-title">Patient Details</h1></div>
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Patient Details</h1>
+          <p class="page-subtitle">Patient profile details from Firestore are shown below.</p>
+        </div>
+      </div>
       <div class="grid details-grid">
         <article class="card pad">
           <div style="display:grid;justify-items:center">
-            <div class="avatar">${HMS.initials(patient.name)}</div>
-            <h2>${patient.name}</h2>
-            <p class="muted">Patient ID: ${patient.id}</p>
-            <span class="badge ${HMS.riskClass(patient.riskLevel)}">${patient.riskLevel.toUpperCase()} RISK</span>
+            <div class="avatar">${HMS.initials(patient.name || "P")}</div>
+            <h2>${escapeHtml(patient.name)}</h2>
+            <p class="muted">Patient ID: ${escapeHtml(patient.patientId)}</p>
+            ${patient.riskLevel ? `<span class="badge ${HMS.riskClass(patient.riskLevel)}">${escapeHtml(patient.riskLevel.toUpperCase())} RISK</span>` : `<span class="muted">Risk Level: -</span>`}
           </div>
         </article>
         <article class="card pad">
           <h3>Basic Information</h3>
           <div class="grid grid-2">
-            ${[["user", "Age", `${patient.age} years`], ["user", "Gender", patient.gender], ["heart", "Blood Type", "O+"], ["calendar", "Last Visit", patient.lastVisit]].map((item) => HMS.infoItem(...item)).join("")}
+            ${[
+              ["mail", "Email", patient.email],
+              ["phone", "Phone", patient.phone],
+              ["calendar", "Date of Birth", patient.dateOfBirth],
+              ["user", "Gender", patient.gender],
+              ["heart", "Blood Type", patient.bloodType],
+              ["calendar", "Last Visit", patient.lastVisit]
+            ].map((item) => HMS.infoItem(item[0], item[1], displayValue(item[2]))).join("")}
           </div>
         </article>
       </div>
       <div class="grid grid-2" style="margin-bottom:32px">
         <article class="card pad">
-          <h3 class="section-title">${HMS.icon("activity")} Health Metrics</h3>
-          ${["Blood Pressure|125/82 mmHg", "Heart Rate|75 bpm", "Blood Glucose|130 mg/dL", "BMI|26.8"].map((metric) => {
-            const [label, value] = metric.split("|");
-            return `<div class="soft-panel row between" style="margin-top:12px"><span>${label}</span><strong>${value}</strong></div>`;
-          }).join("")}
+          <h3 class="section-title">${HMS.icon("pin")} Address</h3>
+          <div class="soft-panel"><p class="profile-display-value">${escapeHtml(displayValue(patient.address)).replaceAll("\n", "<br>")}</p></div>
         </article>
         <article class="card pad">
-          <h3 class="section-title">${HMS.icon("file")} Medical Conditions</h3>
-          <div class="amber-panel" style="padding:16px;border-radius:8px"><strong>${patient.condition}</strong><p class="small muted">Primary condition under management</p></div>
-          <div class="blue-panel" style="padding:16px;border-radius:8px;margin-top:12px"><strong>Hypertension</strong><p class="small muted">Controlled with medication</p></div>
-          <div class="soft-panel" style="margin-top:12px"><strong class="small">Current Medications</strong><p class="small muted">Metformin 500mg - Twice daily<br>Lisinopril 10mg - Once daily</p></div>
+          <h3 class="section-title">${HMS.icon("users")} Emergency Contact</h3>
+          <div class="grid grid-2 profile-display-grid">
+            ${infoBlock("Contact Name", patient.emergencyContactName)}
+            ${infoBlock("Contact Phone", patient.emergencyContactPhone)}
+          </div>
         </article>
       </div>
       <article class="card pad">
-        <div class="row between"><h3>Medical Record Entries</h3><button class="button">+ Add Record</button></div>
-        <div>${records.map(recordBlock).join("")}</div>
+        <h3>Medical Information</h3>
+        <div class="grid grid-3 profile-display-grid">
+          ${infoBlock("Allergies", patient.allergies)}
+          ${infoBlock("Current Medications", patient.currentMedications)}
+          ${infoBlock("Chronic Conditions", patient.chronicConditions)}
+        </div>
       </article>
+      <section style="margin-top:32px">
+        <div class="row between" style="margin-bottom:16px">
+          <div>
+            <h2 class="section-title">${HMS.icon("calendar")} Upcoming Appointments</h2>
+          </div>
+        </div>
+        ${upcomingAppointments.length ? `<div class="grid grid-2">${upcomingAppointments.map(appointmentCard).join("")}</div>` : emptyAppointmentState()}
+      </section>
     </section>
   `);
-
-  document.querySelectorAll(".edit-record").forEach((button) => {
-    button.addEventListener("click", () => {
-      editingRecordId = button.dataset.recordId;
-      renderPatientDetails();
-    });
-  });
-  document.querySelectorAll(".delete-record").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (!confirm("Are you sure you want to delete this medical record?")) return;
-      records = records.filter((record) => record.id !== button.dataset.recordId);
-      saveRecords();
-      renderPatientDetails();
-    });
-  });
-  document.querySelectorAll("[data-record-form]").forEach((form) => {
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const data = new FormData(form);
-      records = records.map((record) => record.id === form.dataset.recordForm ? {
-        ...record,
-        date: data.get("date"),
-        type: data.get("type"),
-        diagnosis: data.get("diagnosis"),
-        treatment: data.get("treatment"),
-        notes: data.get("notes")
-      } : record);
-      editingRecordId = null;
-      saveRecords();
-      renderPatientDetails();
-    });
-  });
-  document.getElementById("cancelEdit")?.addEventListener("click", () => {
-    editingRecordId = null;
-    renderPatientDetails();
-  });
 }
 
-if (user) renderPatientDetails();
+if (user) {
+  try {
+    const patient = await loadPatientDetails();
+    const upcomingAppointments = patient ? await loadUpcomingAppointments(patient) : [];
+    renderPatientDetails(patient, upcomingAppointments);
+  } catch (error) {
+    HMS.renderShell("staff-patient-list.html", `<section class="page"><h1>Unable to load patient details</h1><p>${escapeHtml(error.message || "Please try again later.")}</p><p><a class="link" href="staff-patient-list.html">Back to Patient List</a></p></section>`);
+  }
+}

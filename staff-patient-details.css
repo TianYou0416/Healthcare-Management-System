@@ -7,6 +7,26 @@
   margin-top: 16px;
 }
 
+.profile-display-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.profile-display-item {
+  display: grid;
+  gap: 4px;
+}
+
+.profile-display-item p {
+  margin: 0;
+}
+
+.profile-display-value {
+  font-weight: 650;
+  color: var(--gray-900);
+  word-break: break-word;
+}
+
 @media (max-width: 900px) {
   .details-grid {
     grid-template-columns: 1fr;

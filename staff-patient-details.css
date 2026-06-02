@@ -27,8 +27,94 @@
   word-break: break-word;
 }
 
+.staff-prediction-report + .staff-prediction-report {
+  margin-top: 16px;
+}
+
+.staff-prediction-summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  list-style: none;
+  padding: 24px;
+}
+
+.staff-prediction-summary::-webkit-details-marker {
+  display: none;
+}
+
+.staff-prediction-summary-main {
+  min-width: 0;
+}
+
+.staff-prediction-summary-main h3 {
+  margin: 4px 0;
+}
+
+.staff-prediction-summary-badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.staff-prediction-expand {
+  color: var(--primary);
+  font-size: 0;
+  font-weight: 700;
+}
+
+.staff-prediction-report[open] .staff-prediction-expand {
+  color: var(--muted);
+}
+
+.staff-prediction-report[open] .staff-prediction-expand::after {
+  content: "Hide Report";
+  font-size: 14px;
+}
+
+.staff-prediction-report:not([open]) .staff-prediction-expand::after {
+  content: "View Report";
+  font-size: 14px;
+}
+
+.staff-prediction-body {
+  border-top: 1px solid var(--border);
+  padding: 24px;
+}
+
+.staff-prediction-metrics {
+  margin-bottom: 24px;
+}
+
+.staff-prediction-details {
+  align-items: start;
+}
+
+.staff-prediction-factor + .staff-prediction-factor,
+.staff-prediction-recommendation + .staff-prediction-recommendation {
+  margin-top: 12px;
+}
+
+.staff-prediction-recommendation {
+  padding: 14px;
+  border-radius: 8px;
+}
+
 @media (max-width: 900px) {
   .details-grid {
     grid-template-columns: 1fr;
+  }
+
+  .staff-prediction-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .staff-prediction-summary-badges {
+    justify-content: flex-start;
   }
 }

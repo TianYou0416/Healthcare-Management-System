@@ -33,6 +33,20 @@ function normalizeAppointmentStatus(status) {
   return "Upcoming";
 }
 
+function riskBadgeClass(level) {
+  return HMS.riskClass(String(level || "").toLowerCase());
+}
+
+function predictionTime(prediction) {
+  return prediction.updatedAt?.toMillis?.() || prediction.createdAt?.toMillis?.() || 0;
+}
+
+function formatTimestamp(prediction) {
+  const timestamp = prediction.updatedAt || prediction.createdAt;
+  if (timestamp?.toDate) return timestamp.toDate().toLocaleString("en-SG");
+  return "";
+}
+
 async function loadPatientDetails() {
   const [userSnapshot, patientSnapshot] = await Promise.all([
     getDoc(doc(db, "users", patientId)),
@@ -87,6 +101,29 @@ async function loadUpcomingAppointments(patient) {
   return [];
 }
 
+async function loadPredictionReports(patient) {
+  const queriesToTry = [
+    query(collection(db, "predictions"), where("patientUserId", "==", patient.uid)),
+    query(collection(db, "predictions"), where("userId", "==", patient.uid)),
+    patient.email ? query(collection(db, "predictions"), where("patientEmail", "==", patient.email)) : null
+  ].filter(Boolean);
+
+  const predictionMap = new Map();
+
+  for (const lookupQuery of queriesToTry) {
+    const snapshot = await getDocs(lookupQuery);
+    snapshot.forEach((documentSnapshot) => {
+      predictionMap.set(documentSnapshot.id, {
+        id: documentSnapshot.id,
+        ...documentSnapshot.data()
+      });
+    });
+  }
+
+  return Array.from(predictionMap.values())
+    .sort((a, b) => predictionTime(b) - predictionTime(a));
+}
+
 function infoBlock(label, value) {
   return `<div class="profile-display-item"><p class="label">${label}</p><p class="profile-display-value">${escapeHtml(displayValue(value)).replaceAll("\n", "<br>")}</p></div>`;
 }
@@ -119,11 +156,100 @@ function emptyAppointmentState() {
   `;
 }
 
-function renderPatientDetails(patient, upcomingAppointments) {
+function predictionFactor(factor) {
+  return `
+    <div class="soft-panel staff-prediction-factor">
+      <p class="label">${escapeHtml(displayValue(factor.label))}</p>
+      <p class="profile-display-value">${escapeHtml(displayValue(factor.value))}</p>
+      <p class="small muted">${escapeHtml(displayValue(factor.impact_percentage))}% impact</p>
+    </div>
+  `;
+}
+
+function predictionRecommendation(text) {
+  return `
+    <div class="blue-panel row start staff-prediction-recommendation">
+      ${HMS.icon("check")}
+      <p>${escapeHtml(text)}</p>
+    </div>
+  `;
+}
+
+function predictionReportCard(report, index) {
+  const probability = Number(report.probability || 0);
+  const topFactors = Array.isArray(report.topFactors) ? report.topFactors.slice(0, 3) : [];
+  const recommendations = Array.isArray(report.clinicalRecommendations) ? report.clinicalRecommendations.slice(0, 3) : [];
+
+  return `
+    <details class="card staff-prediction-report">
+      <summary class="staff-prediction-summary">
+        <div class="staff-prediction-summary-main">
+          <p class="small muted">AI Prediction Report ${index + 1}</p>
+          <h3>Prolonged Length of Stay Assessment</h3>
+          <p class="small muted">Generated ${escapeHtml(formatTimestamp(report) || "-")} by ${escapeHtml(displayValue(report.staffName))}</p>
+        </div>
+        <div class="staff-prediction-summary-badges">
+          <span class="badge ${report.prolongedLos === "Yes" ? "red" : "green"}">LOS: ${escapeHtml(displayValue(report.prolongedLos))}</span>
+          <span class="badge ${riskBadgeClass(report.riskLevel)}">${escapeHtml(displayValue(report.riskLevel))} Risk</span>
+          <span class="staff-prediction-expand">View Report</span>
+        </div>
+      </summary>
+
+      <div class="staff-prediction-body">
+        <div class="grid grid-4 staff-prediction-metrics">
+          <div class="soft-panel">
+            <p class="label">Probability</p>
+            <p class="profile-display-value">${Math.round(probability * 100)}%</p>
+          </div>
+          <div class="soft-panel">
+            <p class="label">Threshold</p>
+            <p class="profile-display-value">${escapeHtml(displayValue(report.threshold))}</p>
+          </div>
+          <div class="soft-panel">
+            <p class="label">Model</p>
+            <p class="profile-display-value">${escapeHtml(displayValue(report.model))}</p>
+          </div>
+          <div class="soft-panel">
+            <p class="label">Dataset</p>
+            <p class="profile-display-value">${escapeHtml(displayValue(report.dataset))}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-2 staff-prediction-details">
+          <section>
+            <h4>Key Factors</h4>
+            ${topFactors.length ? topFactors.map(predictionFactor).join("") : `<p class="muted">No key factors available.</p>`}
+          </section>
+          <section>
+            <h4>Clinical Recommendations</h4>
+            ${recommendations.length ? recommendations.map(predictionRecommendation).join("") : `<p class="muted">No recommendations available.</p>`}
+          </section>
+        </div>
+      </div>
+    </details>
+  `;
+}
+
+function emptyPredictionState() {
+  return `
+    <div class="card">
+      <div class="empty-state">
+        <span class="icon-box">${HMS.icon("brain")}</span>
+        <h3>No AI Prediction Reports</h3>
+        <p class="muted empty-state-copy">No AI prediction has been generated for this patient yet.</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderPatientDetails(patient, upcomingAppointments, predictionReports) {
   if (!patient) {
     HMS.renderShell("staff-patient-list.html", `<section class="page"><h1>Patient not found</h1><p><a class="link" href="staff-patient-list.html">Back to Patient List</a></p></section>`);
     return;
   }
+
+  const latestPrediction = predictionReports[0];
+  const displayRiskLevel = patient.riskLevel || latestPrediction?.riskLevel || "";
 
   HMS.renderShell("staff-patient-list.html", `
     <section class="page">
@@ -139,7 +265,7 @@ function renderPatientDetails(patient, upcomingAppointments) {
             <div class="avatar">${HMS.initials(patient.name || "P")}</div>
             <h2>${escapeHtml(patient.name)}</h2>
             <p class="muted">Patient ID: ${escapeHtml(patient.patientId)}</p>
-            ${patient.riskLevel ? `<span class="badge ${HMS.riskClass(patient.riskLevel)}">${escapeHtml(patient.riskLevel.toUpperCase())} RISK</span>` : `<span class="muted">Risk Level: -</span>`}
+            ${displayRiskLevel ? `<span class="badge ${riskBadgeClass(displayRiskLevel)}">${escapeHtml(displayRiskLevel.toUpperCase())} RISK</span>` : `<span class="muted">Risk Level: -</span>`}
           </div>
         </article>
         <article class="card pad">
@@ -185,6 +311,16 @@ function renderPatientDetails(patient, upcomingAppointments) {
         </div>
         ${upcomingAppointments.length ? `<div class="grid grid-2">${upcomingAppointments.map(appointmentCard).join("")}</div>` : emptyAppointmentState()}
       </section>
+      <section style="margin-top:32px">
+        <div class="row between" style="margin-bottom:16px">
+          <div>
+            <h2 class="section-title">${HMS.icon("brain")} AI Prediction Reports</h2>
+            <p class="muted">Previous LightGBM prediction reports generated for this patient.</p>
+          </div>
+          <a class="button secondary" href="staff-ai-prediction.html">Generate New Prediction</a>
+        </div>
+        ${predictionReports.length ? predictionReports.map(predictionReportCard).join("") : emptyPredictionState()}
+      </section>
     </section>
   `);
 }
@@ -193,7 +329,8 @@ if (user) {
   try {
     const patient = await loadPatientDetails();
     const upcomingAppointments = patient ? await loadUpcomingAppointments(patient) : [];
-    renderPatientDetails(patient, upcomingAppointments);
+    const predictionReports = patient ? await loadPredictionReports(patient) : [];
+    renderPatientDetails(patient, upcomingAppointments, predictionReports);
   } catch (error) {
     HMS.renderShell("staff-patient-list.html", `<section class="page"><h1>Unable to load patient details</h1><p>${escapeHtml(error.message || "Please try again later.")}</p><p><a class="link" href="staff-patient-list.html">Back to Patient List</a></p></section>`);
   }

@@ -1,3 +1,40 @@
 .prediction-actions {
   flex-wrap: wrap;
 }
+
+.prediction-form {
+  display: grid;
+  gap: 18px;
+}
+
+.ai-feature-field {
+  min-width: 0;
+}
+
+.ai-feature-field .small {
+  min-height: 34px;
+}
+
+.selected-patient-panel {
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.prediction-result {
+  margin-top: 8px;
+}
+
+.factor-card {
+  margin-top: 12px;
+}
+
+.recommendation-row {
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.prediction-warning {
+  padding: 24px;
+  border-radius: 8px;
+}

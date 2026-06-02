@@ -1,3 +1,29 @@
 .prediction-note {
+  padding: 16px;
+  border-radius: 8px;
   margin-top: 24px;
+}
+
+.patient-prediction-hero,
+.patient-prediction-section {
+  margin-bottom: 32px;
+}
+
+.patient-factor-grid {
+  margin-top: 16px;
+}
+
+.patient-factor-card {
+  min-width: 0;
+}
+
+.patient-recommendation-row {
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.patient-history-note {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
 }

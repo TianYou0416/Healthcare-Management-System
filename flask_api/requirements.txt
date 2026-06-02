@@ -1,0 +1,8 @@
+flask
+flask-cors
+joblib
+lightgbm
+numpy
+pandas
+scikit-learn==1.6.1
+shap

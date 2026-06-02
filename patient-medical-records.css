@@ -1,3 +1,91 @@
 .record-panel + .record-panel {
+  margin-top: 20px;
+}
+
+.medical-records-overview {
+  margin-bottom: 20px;
+}
+
+.medical-record-summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  list-style: none;
+  padding: 24px;
+}
+
+.medical-record-summary::-webkit-details-marker {
+  display: none;
+}
+
+.medical-record-summary-main {
+  min-width: 0;
+}
+
+.medical-record-summary-main h3 {
+  margin: 4px 0;
+}
+
+.medical-record-summary-badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.medical-expand-text {
+  color: var(--primary);
+  font-size: 0;
+  font-weight: 700;
+}
+
+.record-panel[open] .medical-expand-text {
+  color: var(--muted);
+}
+
+.record-panel[open] .medical-expand-text::after {
+  content: "Hide Report";
+  font-size: 14px;
+}
+
+.record-panel:not([open]) .medical-expand-text::after {
+  content: "View Report";
+  font-size: 14px;
+}
+
+.medical-record-body {
+  border-top: 1px solid var(--border);
+  padding: 24px;
+}
+
+.medical-summary-grid {
+  margin-bottom: 24px;
+}
+
+.medical-record-details {
+  align-items: start;
+}
+
+.medical-factor + .medical-factor,
+.medical-recommendation + .medical-recommendation {
   margin-top: 12px;
+}
+
+.medical-recommendation {
+  padding: 14px;
+  border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+  .medical-record-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .medical-record-summary-badges {
+    justify-content: flex-start;
+  }
 }

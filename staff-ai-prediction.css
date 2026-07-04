@@ -15,6 +15,33 @@
   min-height: 34px;
 }
 
+.ai-feature-section {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.ai-feature-section + .ai-feature-section {
+  margin-top: 8px;
+}
+
+.ai-feature-section-header h4,
+.ai-feature-section-header p {
+  margin: 0;
+}
+
+.ai-feature-section-header h4 {
+  color: var(--teal);
+  font-size: 16px;
+}
+
+.ai-feature-section-header p {
+  margin-top: 4px;
+}
+
 .selected-patient-panel {
   padding: 16px;
   border-radius: 8px;
@@ -26,6 +53,7 @@
 
 .factor-card {
   margin-top: 12px;
+  background: var(--surface-subtle);
 }
 
 .recommendation-row {

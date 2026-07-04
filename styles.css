@@ -1,21 +1,35 @@
 :root {
   --blue: #2563eb;
   --blue-dark: #1d4ed8;
-  --blue-soft: #eff6ff;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-900: #111827;
+  --blue-soft: #eef5ff;
+  --teal: #0f766e;
+  --teal-dark: #115e59;
+  --teal-soft: #e6fffb;
+  --cyan-soft: #ecfeff;
+  --gray-50: #f7fafc;
+  --gray-100: #edf2f7;
+  --gray-200: #dfe7ef;
+  --gray-300: #cbd5e1;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-900: #0f172a;
   --green: #16a34a;
   --green-soft: #dcfce7;
   --amber: #d97706;
   --amber-soft: #fef3c7;
   --red: #dc2626;
   --red-soft: #fee2e2;
+  --coral-soft: #fff1f2;
+  --primary: var(--teal);
+  --primary-dark: var(--teal-dark);
+  --primary-soft: var(--teal-soft);
+  --muted: var(--gray-600);
+  --border: var(--gray-200);
+  --surface: #ffffff;
+  --surface-subtle: #fbfdff;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
 * {
@@ -31,7 +45,8 @@ body,
 
 body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: var(--gray-50);
+  background:
+    linear-gradient(180deg, #f8fbfd 0%, #eef7f6 100%);
   color: var(--gray-900);
 }
 
@@ -57,7 +72,9 @@ a {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: linear-gradient(135deg, #2563eb, #1e40af);
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(37, 99, 235, 0.88)),
+    linear-gradient(180deg, #f8fbfd, #ecfeff);
 }
 
 .auth-card {
@@ -65,8 +82,9 @@ a {
   max-width: 448px;
   padding: 32px;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
 }
 
 .brand {
@@ -87,6 +105,10 @@ a {
 .brand h1 {
   font-size: 24px;
   font-weight: 650;
+}
+
+.brand svg {
+  color: var(--teal);
 }
 
 .auth-card h2 {
@@ -116,12 +138,14 @@ a {
 .select,
 .textarea {
   width: 100%;
+  min-height: 44px;
   padding: 10px 14px;
   border: 1px solid var(--gray-300);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
   color: var(--gray-900);
   outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 .textarea {
@@ -131,8 +155,8 @@ a {
 .input:focus,
 .select:focus,
 .textarea:focus {
-  border-color: transparent;
-  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
 }
 
 .role-grid {
@@ -143,16 +167,18 @@ a {
 
 .role-button {
   padding: 10px 12px;
-  border: 2px solid var(--gray-200);
+  border: 1px solid var(--gray-200);
   border-radius: 8px;
   background: #fff;
   color: var(--gray-700);
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 
 .role-button.active {
-  border-color: var(--blue);
-  background: var(--blue-soft);
-  color: var(--blue);
+  border-color: var(--teal);
+  background: var(--teal-soft);
+  color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
 }
 
 .button {
@@ -163,14 +189,16 @@ a {
   padding: 10px 16px;
   border: 0;
   border-radius: 8px;
-  background: var(--blue);
+  background: var(--teal);
   color: #fff;
   font-weight: 600;
-  transition: background 160ms ease, border-color 160ms ease;
+  box-shadow: var(--shadow-sm);
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .button:hover {
-  background: var(--blue-dark);
+  background: var(--teal-dark);
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.2);
 }
 
 .button.secondary {
@@ -180,7 +208,8 @@ a {
 }
 
 .button.secondary:hover {
-  background: var(--gray-50);
+  background: var(--surface-subtle);
+  box-shadow: var(--shadow-sm);
 }
 
 .button.danger {
@@ -194,12 +223,12 @@ a {
 }
 
 .button.soft {
-  background: var(--blue-soft);
-  color: var(--blue);
+  background: var(--teal-soft);
+  color: var(--teal);
 }
 
 .button.soft:hover {
-  background: #dbeafe;
+  background: #ccfbf1;
 }
 
 .button:disabled {
@@ -228,7 +257,7 @@ a {
 }
 
 .link {
-  color: var(--blue);
+  color: var(--teal);
   font-weight: 600;
 }
 
@@ -239,7 +268,8 @@ a {
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background: var(--gray-50);
+  background:
+    linear-gradient(180deg, #f8fbfd 0%, #eef7f6 100%);
 }
 
 .sidebar {
@@ -248,8 +278,9 @@ a {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  border-right: 1px solid var(--gray-200);
-  background: #fff;
+  border-right: 1px solid rgba(203, 213, 225, 0.82);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 8px 0 28px rgba(15, 23, 42, 0.04);
 }
 
 .sidebar-brand {
@@ -259,7 +290,7 @@ a {
 
 .sidebar-brand h1 {
   margin: 0;
-  color: var(--blue);
+  color: var(--teal);
   font-size: 20px;
   font-weight: 700;
 }
@@ -270,6 +301,17 @@ a {
   color: var(--gray-500);
   font-size: 13px;
   text-transform: capitalize;
+}
+
+.sidebar-brand p {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 4px 9px;
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  border-radius: 999px;
+  background: var(--teal-soft);
+  color: var(--teal);
+  font-weight: 700;
 }
 
 .nav {
@@ -285,16 +327,33 @@ a {
   padding: 10px 16px;
   margin-bottom: 8px;
   border-radius: 8px;
+  border: 1px solid transparent;
   color: var(--gray-700);
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
 .nav a:hover {
-  background: var(--gray-50);
+  background: var(--surface-subtle);
+  border-color: var(--gray-200);
+  color: var(--teal);
 }
 
 .nav a.active {
-  background: var(--blue-soft);
-  color: var(--blue);
+  position: relative;
+  background: var(--teal-soft);
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.nav a.active::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--teal);
 }
 
 .sidebar-footer {
@@ -304,8 +363,9 @@ a {
 
 .user-card {
   padding: 12px;
+  border: 1px solid var(--gray-200);
   border-radius: 8px;
-  background: var(--gray-50);
+  background: var(--surface-subtle);
 }
 
 .user-card strong {
@@ -325,8 +385,9 @@ a {
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  border-bottom: 1px solid var(--gray-200);
-  background: #fff;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.82);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
 }
 
 .topbar h2 {
@@ -360,6 +421,7 @@ a {
 .page-title {
   font-size: 30px;
   font-weight: 700;
+  letter-spacing: 0;
 }
 
 .page-subtitle {
@@ -385,14 +447,20 @@ a {
 }
 
 .card {
-  border: 1px solid var(--gray-200);
+  border: 1px solid rgba(203, 213, 225, 0.86);
   border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .card.pad {
   padding: 24px;
+}
+
+.card:hover {
+  border-color: rgba(15, 118, 110, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -405,6 +473,7 @@ a {
   align-items: center;
   gap: 8px;
   font-size: 20px;
+  color: var(--gray-900);
 }
 
 .list-divider > * + * {
@@ -436,6 +505,7 @@ a {
   align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
+  border: 1px solid transparent;
   font-size: 12px;
   font-weight: 700;
 }
@@ -445,21 +515,25 @@ a {
 }
 
 .badge.blue {
+  border-color: rgba(37, 99, 235, 0.16);
   background: var(--blue-soft);
   color: var(--blue);
 }
 
 .badge.green {
+  border-color: rgba(22, 163, 74, 0.16);
   background: var(--green-soft);
   color: #15803d;
 }
 
 .badge.amber {
+  border-color: rgba(217, 119, 6, 0.18);
   background: var(--amber-soft);
   color: #b45309;
 }
 
 .badge.red {
+  border-color: rgba(220, 38, 38, 0.16);
   background: var(--red-soft);
   color: #b91c1c;
 }
@@ -472,8 +546,8 @@ a {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: var(--blue-soft);
-  color: var(--blue);
+  background: var(--teal-soft);
+  color: var(--teal);
 }
 
 .icon-box.green {
@@ -512,7 +586,7 @@ a {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--teal), var(--blue));
   color: #fff;
   font-size: 30px;
   font-weight: 700;
@@ -534,13 +608,14 @@ a {
 
 .soft-panel {
   padding: 16px;
+  border: 1px solid rgba(203, 213, 225, 0.62);
   border-radius: 8px;
-  background: var(--gray-50);
+  background: var(--surface-subtle);
 }
 
 .blue-panel {
-  border: 1px solid #bfdbfe;
-  background: var(--blue-soft);
+  border: 1px solid rgba(14, 165, 233, 0.22);
+  background: var(--cyan-soft);
 }
 
 .amber-panel {
@@ -551,12 +626,15 @@ a {
 .gradient-panel {
   padding: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.98), rgba(37, 99, 235, 0.92));
   color: #fff;
+  box-shadow: 0 18px 44px rgba(15, 118, 110, 0.18);
 }
 
 .gradient-panel .muted {
-  color: #dbeafe;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .progress {
@@ -578,7 +656,7 @@ a {
 }
 
 .progress.gray > span {
-  background: var(--blue);
+  background: var(--teal);
 }
 
 .table-wrap {
@@ -600,12 +678,12 @@ td {
 }
 
 th {
-  background: var(--gray-50);
+  background: var(--surface-subtle);
   font-weight: 700;
 }
 
 tr:hover td {
-  background: var(--gray-50);
+  background: var(--surface-subtle);
 }
 
 .chart-bars {
@@ -630,7 +708,7 @@ tr:hover td {
 .bar {
   min-height: 24px;
   border-radius: 8px 8px 0 0;
-  background: #3b82f6;
+  background: var(--teal);
 }
 
 .donut {

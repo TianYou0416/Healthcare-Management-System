@@ -85,6 +85,55 @@ function featureInput(feature) {
   `;
 }
 
+function featureGroupName(featureName) {
+  if (["Age Group", "Gender", "Race", "Ethnicity"].includes(featureName)) {
+    return "Patient Demographics";
+  }
+  if (["Type of Admission", "Emergency Department Indicator"].includes(featureName)) {
+    return "Admission Details";
+  }
+  if (["CCSR Diagnosis Description", "CCSR Procedure Description", "APR DRG Description", "APR MDC Description", "APR Medical Surgical Description"].includes(featureName)) {
+    return "Diagnosis & Procedure";
+  }
+  return "Severity Indicators";
+}
+
+function featureGroupDescription(groupName) {
+  const descriptions = {
+    "Patient Demographics": "Basic patient characteristics used by the trained model.",
+    "Admission Details": "Information about how the inpatient case entered care.",
+    "Diagnosis & Procedure": "Clinical categories describing the patient case.",
+    "Severity Indicators": "Risk and severity fields that strongly influence LOS prediction."
+  };
+  return descriptions[groupName] || "";
+}
+
+function groupedFeatureSections() {
+  const groups = ["Patient Demographics", "Admission Details", "Diagnosis & Procedure", "Severity Indicators"];
+  const featuresByGroup = groups.reduce((accumulator, groupName) => {
+    accumulator[groupName] = [];
+    return accumulator;
+  }, {});
+
+  featureSchema.forEach((feature) => {
+    featuresByGroup[featureGroupName(feature.feature)].push(feature);
+  });
+
+  return groups
+    .filter((groupName) => featuresByGroup[groupName].length)
+    .map((groupName) => `
+      <section class="ai-feature-section">
+        <div class="ai-feature-section-header">
+          <h4>${escapeHtml(groupName)}</h4>
+          <p class="small muted">${escapeHtml(featureGroupDescription(groupName))}</p>
+        </div>
+        <div class="grid grid-2">
+          ${featuresByGroup[groupName].map(featureInput).join("")}
+        </div>
+      </section>
+    `).join("");
+}
+
 function featureForm() {
   if (!featureSchema.length) {
     return `
@@ -98,9 +147,7 @@ function featureForm() {
 
   return `
     <form id="predictionForm" class="prediction-form">
-      <div class="grid grid-2">
-        ${featureSchema.map(featureInput).join("")}
-      </div>
+      ${groupedFeatureSections()}
       <button class="button" type="submit" ${!selectedPatientId || generating ? "disabled" : ""} style="margin-top:24px">
         ${generating ? `<span class="spinner"></span> Running AI Prediction Model...` : `${HMS.icon("brain")} Run AI Prediction`}
       </button>
